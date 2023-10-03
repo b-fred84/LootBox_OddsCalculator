@@ -1,0 +1,159 @@
+﻿@page "/"
+
+
+
+<head>
+    <style>
+
+        header {
+            padding: 1px;
+            background-color: red;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-spacing: 0;
+            width: 40%
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: darkgrey;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: red;
+            border: 3px solid;
+        }
+
+        .result {
+            border: 2px solid #000;
+            padding: 8px;
+            margin-top: 15px;
+            margin-bottom: 30px;
+            width: 20%
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+        }
+
+            .form-group label {
+                width: 195px;
+            }
+
+            .form-group input[type="number"] {
+                width: 80px;
+            }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h2>Loot Box Odds Checker</h2>
+    </header>
+
+
+    <div class="form-group">
+        <label for="percentageChance">Enter the percentage chance:</label>
+        <input type="number" id="percentageChance" @bind=percentageInput min="1" max="100" onfocus="this.value=''" /><span>%</span>
+    </div>
+    <div class="form-group">
+        <label for="chances">Enter the amount of tries:</label>
+        <input type="number" name="chances" @bind=chancesInput min="1" onfocus="this.value=''" />
+    </div>
+
+    <button @onclick="Calculate">Calculate</button>
+
+    <br />
+    <br />
+    <div class="result">
+        Result:
+        @if (showResult)
+        {
+            @result.ToString("P2")
+        }
+
+    </div>
+
+
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Percentage Chance</th>
+                <th>Number of Tries</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < targetPercentages.Length; i++)
+            {
+                <tr>
+                    <td>@targetPercentages[i]%</td>
+                    <td>
+                        @if (showResult)
+                        {
+                            @boxesNeeded[i]
+                        }
+                    </td>
+                </tr>
+            }
+
+
+        </tbody>
+    </table>
+
+</body>
+
+@code {
+
+    private double percentageInput;
+    private double chancesInput;
+    private double result;
+    private bool showResult;
+
+    private static double[] targetPercentages = new double[] { 10, 25, 50, 60, 70, 75, 80, 90, 95, 99, 99.99 };
+    private double[] boxesNeeded = new double[targetPercentages.Length];
+
+
+    private void Calculate()
+    {
+
+        result = 1 - Math.Pow(1 - (percentageInput / 100), chancesInput);
+        showResult = true;
+        CalculateNumberOfBoxes();
+    }
+
+    private void CalculateNumberOfBoxes()
+    {
+
+
+        for (int i = 0; i < targetPercentages.Length; i++)
+        {
+            double targetProbability = targetPercentages[i] / 100;
+
+
+
+            double boxes = 1;
+
+            while (Math.Pow(1 - (percentageInput / 100), boxes) > 1 - targetProbability)
+            {
+                boxes++;
+            }
+
+            boxesNeeded[i] = boxes;
+
+        }
+    }
+}
